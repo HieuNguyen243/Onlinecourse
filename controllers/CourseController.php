@@ -1,10 +1,14 @@
 <?php
+require_once './models/CourseModel.php';
+require_once './models/LessonModel.php';
 class CourseController {
-    require_once './models/CourseModel.php';
+    
     private $courseModel;
+    private $lessonModel;
 
     public function __construct($pdo) {
         $this->courseModel = new CourseModel($pdo);
+        $this->lessonModel = new LessonModel($pdo);
     }
 
     public function listALlCourses() {
@@ -35,14 +39,27 @@ class CourseController {
         if(isset($_SESSION['user_id'])) {
             $student_id = $_SESSION['user_id'];
             $result = $this->courseModel->getEnrolledCourses($student_id);
-            require './views/course/index.php';
+            require './views/student/my_courses.php'; 
         }
         else {
-            header("Location: ./views/auth/login.php");
+            header("Location: index.php?controller=Auth&action=Login");
             exit();
         }
         
     }
-}
 
+    public function detail() {
+        $course_id = $_GET['course_id'];
+        $lessons = $this->lessonModel->getLessonsByCourse($course_id);
+        //nếu đã đăng nhập mới hiển thị trạng thái đã học
+        if(isset($_SESSION['user_id'])) {
+            $student_id = $_SESSION['user_id'];
+            foreach ($lessons as &$lesson) {
+                $lesson['is_completed'] = $this->lessonModel->isLessonCompleted($student_id, $lesson['id']);
+            }
+        
+        unset($lesson);
+        require './views/course/detail.php';
+    }
+}
 ?>
