@@ -62,4 +62,5 @@ class CourseController {
         require './views/course/detail.php';
     }
 }
+}
 ?>

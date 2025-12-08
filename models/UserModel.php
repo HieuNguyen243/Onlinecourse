@@ -13,7 +13,7 @@ class UserModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }   
 
-    public funtion addUser($name, $email, $password, $fullname, $role, $created_at){
+    public function addUser($name, $email, $password, $fullname, $role, $created_at){
         $sql = "insert into users (name, email, password, fullname, role, created_at) values (?, ?, ?, ?, ?, ?)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$name, $email, $password, $fullname, $role, $created_at]);

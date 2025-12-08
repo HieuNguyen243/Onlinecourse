@@ -35,4 +35,27 @@ class CourseModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getCoursesByInstructor($instructor_id) {
+        $sql = "SELECT * FROM courses WHERE instructor_id = ?";
+        return $this->select($sql, [$instructor_id]); 
+    }
+
+    public function createCourse($title, $desc, $instructor_id, $cat_id, $price) {
+        $sql = "INSERT INTO courses (title, description, instructor_id, category_id, price) VALUES (?, ?, ?, ?, ?)";
+        return $this->execute($sql, [$title, $desc, $instructor_id, $cat_id, $price]);
+    }
+
+    public function updateCourse($id, $title, $desc, $cat_id, $price) {
+        $sql = "UPDATE courses SET title=?, description=?, category_id=?, price=? WHERE id=?";
+        return $this->execute($sql, [$title, $desc, $cat_id, $price, $id]);
+    }
+
+    public function deleteCourse($id) {
+        $sql = "DELETE FROM courses WHERE id=?";
+        return $this->execute($sql, [$id]);
+    }
+    public function getCourseById($id) {
+        $sql = "SELECT * FROM courses WHERE id = ?";
+        return $this->selectOne($sql, [$id]); 
+    }
 }

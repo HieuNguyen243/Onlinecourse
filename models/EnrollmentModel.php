@@ -25,5 +25,21 @@ class EnrollmentModel {
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([$percent, $status, $student_id, $course_id]);
     }
+    // Nguyễn Nguyên
+    public function getStudentsByCourse($course_id) {
+        $sql = "SELECT u.fullname, u.email, e.enrolled_date, e.progress, e.status
+                FROM enrollments e
+                JOIN users u ON e.student_id = u.id
+                WHERE e.course_id = ?";
+        return $this->select($sql, [$course_id]);
+    }
+    
+    public function updateProgress($enrollment_id, $course_id) {
+        $sqlTotal = "SELECT COUNT(*) as total FROM lessons WHERE course_id = ?";
+        $sqlCompleted = "SELECT COUNT(*) as completed FROM lesson_completions WHERE enrolled_id = ?";
+        $percent = ($completed / $total) * 100;
+        $sqlUpdate = "UPDATE enrollments SET progress = ? WHERE id = ?";
+        $this->execute($sqlUpdate, [$percent, $enrollment_id]);
+    }
 }
 ?>
