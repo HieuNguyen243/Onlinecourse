@@ -14,21 +14,22 @@
 <body>
     <div class="form-container">
         <h2>Đăng Nhập</h2>
-        
+       
         <?php if (isset($error)): ?>
             <p class="error"><?php echo $error; ?></p>
         <?php endif; ?>
 
+
         <form action="index.php?controller=auth&action=login" method="POST">
             <label>Email đăng nhập:</label>
-            <input type="text" name="email" required placeholder="Nhập email">
-            
+            <input type="email" name="email" required placeholder="Nhập email">
+           
             <label>Mật khẩu:</label>
             <input type="password" name="password" required placeholder="Nhập password">
-            
+           
             <button type="submit">Đăng nhập</button>
         </form>
-        
+       
         <p>Chưa có tài khoản? <a href="index.php?controller=auth&action=register">Đăng ký ngay</a></p>
     </div>
 </body>
