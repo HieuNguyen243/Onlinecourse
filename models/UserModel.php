@@ -1,29 +1,69 @@
-<?php
-
+<?php 
 class UserModel {
-    private $pdo;
+    private $conn;
+    private $table = 'users';
 
-    public function __contruct($pdo) {
-        $this->pdo = $pdo;
+    public function __construct($db) {
+        $this->conn = $db;
     }
 
-    public function getAllUsers() {
-        $sql = "SELECT * FROM users";
-        $stmt = $this->pdo->query($sql);
+ 
+    public function create($username, $email, $password, $fullname, $role = 0) {
+        $query = "INSERT INTO " . $this->table . " 
+                  (username, email, password, fullname, role, created_at) 
+                  VALUES (:username, :email, :password, :fullname, :role, NOW())";
+        $stmt = $this->conn->prepare($query);
+
+
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        $stmt->bindParam(':username', $username);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':password', $hashed_password);
+        $stmt->bindParam(':fullname', $fullname);
+        $stmt->bindParam(':role', $role);
+
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+
+    public function findByEmail($email) {
+        $query = "SELECT * FROM " . $this->table . " WHERE email = :email";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function getAll() {
+        $query = "SELECT * FROM " . $this->table . " ORDER BY created_at DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }   
-
-    public funtion addUser($name, $email, $password, $fullname, $role, $created_at){
-        $sql = "insert into users (name, email, password, fullname, role, created_at) values (?, ?, ?, ?, ?, ?)";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$name, $email, $password, $fullname, $role, $created_at]);
     }
 
-    public function deleteUser($id) {
-        $sql = "DELETE FROM users WHERE id = ?";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$id]);
+    public function getById($id) {
+        $query = "SELECT * FROM " . $this->table . " WHERE id = :id LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    
-}
+    public function delete($id) {
+        $query = "DELETE FROM " . $this->table . " WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+} 
+
+
+
+?> 
