@@ -37,12 +37,13 @@ class UserModel {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function getAll() {
+     public function getAll() {
         $query = "SELECT * FROM " . $this->table . " ORDER BY created_at DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
 
     public function getById($id) {
         $query = "SELECT * FROM " . $this->table . " WHERE id = :id LIMIT 1";
@@ -52,16 +53,31 @@ class UserModel {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+
     public function delete($id) {
         $query = "DELETE FROM " . $this->table . " WHERE id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id);
-        
+       
         if ($stmt->execute()) {
             return true;
         }
         return false;
     }
+
+
+    // Kiểm tra xem User có đang sở hữu khóa học nào không
+    public function hasCourses($userId) {
+        $query = "SELECT COUNT(*) as total FROM courses WHERE instructor_id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $userId);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        return $row['total'] > 0; // Trả về true nếu số khóa học > 0
+    }
+
+   
 } 
 
 
