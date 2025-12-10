@@ -31,7 +31,7 @@
                     </h2>
                     
                     <?php if(!empty($currentLesson['content'])): ?>
-                        <div class="text-sm text-gray-400 line-clamp-2 max-w-2xl cursor-pointer hover:text-white" onclick="alert('<?php echo strip_tags($currentLesson['content']); ?>')">
+                        <div class="text-sm text-gray-400 line-clamp-2 max-w-2xl cursor-pointer hover:text-white" onclick="alert('<?php echo htmlspecialchars(strip_tags($currentLesson['content']), ENT_QUOTES); ?>')">
                             <?php echo strip_tags($currentLesson['content']); ?> <span class="text-xs text-blue-400">(Xem chi tiết)</span>
                         </div>
                     <?php endif; ?>
