@@ -24,7 +24,7 @@ class LessonController {
             
             $material = $this->materialModel->getMaterialsByLesson($lesson_id);
             
-            
+            $currentLesson = $this->lessonModel->getLessonById($lesson_id);
             $listLessons = $this->lessonModel->getLessonsByCourse($course_id);
             
             foreach ($listLessons as &$l) {
