@@ -1,8 +1,8 @@
 <?php 
 class UserModel {
     private $conn;
-    private $table = 'users';
-
+    private $table = 'users'; 
+    
     public function __construct($db) {
         $this->conn = $db;
     }

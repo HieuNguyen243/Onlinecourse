@@ -11,7 +11,7 @@ class CourseController {
         $this->lessonModel = new LessonModel($pdo);
     }
 
-    public function listALlCourses() {
+    public function listAllCourses() {
         $allcourses = $this->courseModel->getAllCourses();
         require './views/course/index.php';
     }
@@ -57,7 +57,7 @@ class CourseController {
             foreach ($lessons as &$lesson) {
                 $lesson['is_completed'] = $this->lessonModel->isLessonCompleted($student_id, $lesson['id']);
             }
-        
+        }
         unset($lesson);
         require './views/course/detail.php';
     }

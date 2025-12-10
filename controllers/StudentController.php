@@ -16,14 +16,21 @@ class StudentController {
     }
 
     public function dashboard() {
-        if(isset($_SESSION['user_id'])) {
-            $student_id = $_SESSION['user_id'];
-            $allCourses = $this->courseModel->getAllCourses();
-            $categories = $this->categoryModel->getAllCategories();
-            require './views/student/dashboard.php';
-        } else {
-            header("Location: index.php?controller=auth&action=login");
-            exit();
-        }
+            if(isset($_SESSION['user_id'])) {
+                $student_id = $_SESSION['user_id'];
+                
+                $allCourses = $this->courseModel->getAllCourses();
+                
+                
+                $enrolledCourses = $this->courseModel->getEnrolledCourses($student_id);
+                $enrolledIds = array_column($enrolledCourses, 'id');
+
+                $categories = $this->categoryModel->getAllCategories();
+                
+                require './views/student/dashboard.php';
+            } else {
+                header("Location: index.php?controller=auth&action=login");
+                exit();
+            }
     }
 }
