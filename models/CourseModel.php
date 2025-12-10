@@ -7,7 +7,11 @@ class CourseModel {
     }
 
     public function getAllCourses() {
-        $sql = "SELECT * FROM courses";
+        $sql = "SELECT c.*, u.fullname as instructor_name, cat.name as category_name 
+                FROM courses c 
+                LEFT JOIN users u ON c.instructor_id = u.id 
+                LEFT JOIN categories cat ON c.category_id = cat.id
+                ORDER BY c.created_at DESC";
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }   
@@ -33,6 +37,17 @@ class CourseModel {
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$student_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getCourseById($id) {
+        $sql = "SELECT c.*, u.fullname as instructor_name, cat.name as category_name 
+                FROM courses c 
+                LEFT JOIN users u ON c.instructor_id = u.id 
+                LEFT JOIN categories cat ON c.category_id = cat.id
+                WHERE c.id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
 }
