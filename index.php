@@ -17,7 +17,6 @@ $actionInput     = isset($_GET['action']) ? $_GET['action'] : 'index';
 $controllerName = ucfirst($controllerInput) . 'Controller'; 
 $controllerPath = "./controllers/$controllerName.php";
 
-
 if (file_exists($controllerPath)) {
     require_once $controllerPath;
 

@@ -17,7 +17,7 @@ class LessonController {
     public function detail() {
         if (isset($_GET['lesson_id']) && isset($_SESSION['user_id'])) {
             $lesson_id = $_GET['lesson_id'];
-            $material = $this->materialModel->getMaterialByLesson($lesson_id);
+            $material = $this->materialModel->getMaterialsByLesson($lesson_id);
             require './views/lesson/detail.php';
         } else {
             header("Location: index.php?controller=auth&action=login");
@@ -39,6 +39,7 @@ class LessonController {
             $this->enrollmentModel->updateProgressDirect($student_id, $course_id, $percent);
 
             header("Location: index.php?controller=lesson&action=detail&course_id=$course_id");
+            exit();
         }    
     }
 }
