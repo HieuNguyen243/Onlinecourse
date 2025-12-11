@@ -5,7 +5,8 @@ require_once './config/Database.php';
 
 try {
     $database = new Database();
-    $db = $database->connect(); 
+    $db = $database->connect();
+    
 } catch (Exception $e) {
     die("Lỗi kết nối CSDL: " . $e->getMessage());
 }

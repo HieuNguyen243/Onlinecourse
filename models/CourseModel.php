@@ -31,7 +31,8 @@ class CourseModel {
     }
 
     public function getEnrolledCourses($student_id) {
-        $sql = "SELECT c.* FROM courses c 
+        $sql = "SELECT c.*, e.progress, e.status as enrollment_status 
+                FROM courses c 
                 JOIN enrollments e ON c.id = e.course_id 
                 WHERE e.student_id = ?";
         $stmt = $this->pdo->prepare($sql);
