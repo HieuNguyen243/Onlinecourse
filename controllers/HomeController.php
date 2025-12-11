@@ -3,7 +3,6 @@ require_once './controllers/CourseController.php';
 require_once './controllers/AuthController.php';
 require_once './controllers/EnrollmentController.php';
 require_once './controllers/LessonController.php';
-require_once './controllers/CategoryController.php';
 require_once './models/CategoryModel.php';
 require_once './models/CourseModel.php';
 
