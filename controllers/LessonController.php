@@ -32,6 +32,17 @@ class LessonController {
                 $l['is_current'] = ($l['id'] == $lesson_id);
             }
             unset($l);
+            $next_lesson_id = null;
+            $foundCurrent = false;
+            foreach ($listLessons as $item) {
+                if ($foundCurrent) {
+                    $next_lesson_id = $item['id'];
+                    break;
+                }
+                if ($item['id'] == $lesson_id) {
+                    $foundCurrent = true;
+                }
+            }
 
             require './views/lesson/detail.php';
         } else {
