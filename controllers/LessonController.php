@@ -42,7 +42,7 @@ class LessonController {
         }    
     }
 
-    // chỗ này của Nguyên
+ 
     public function store() {
         $lessonModel = new LessonModel();
         $lesson_id = $lessonModel->addLesson(...);
