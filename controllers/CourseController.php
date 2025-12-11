@@ -61,7 +61,7 @@ class CourseController {
         require './views/courses/detail.php';
     }
 
-    // Trả về tất cả khóa học — dùng bởi HomeController
+    
     public function getAllCourses() {
         return $this->courseModel->getAllCourses();
     }
