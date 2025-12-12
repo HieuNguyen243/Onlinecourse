@@ -28,7 +28,6 @@ class UserModel {
                 return true;
             }
         } catch (PDOException $e) {
-            // Handle duplicate entry or other database errors
             return false;
         }
         return false;
@@ -36,10 +35,22 @@ class UserModel {
 
     public function findByEmail($email) {
         $query = "SELECT * FROM " . $this->table . " WHERE email = :email";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            if (strpos($e->getMessage(), '2006') !== false || strpos($e->getMessage(), 'HY000') !== false) {
+                
+                $stmt = $this->conn->prepare($query);
+                $stmt->bindParam(':email', $email);
+                $stmt->execute();
+                return $stmt->fetch(PDO::FETCH_ASSOC);
+            }
+            throw $e;
+        }
     }
 
      public function getAll() {
@@ -71,7 +82,6 @@ class UserModel {
     }
 
 
-    // Kiểm tra xem User có đang sở hữu khóa học nào không
     public function hasCourses($userId) {
         $query = "SELECT COUNT(*) as total FROM courses WHERE instructor_id = :id";
         $stmt = $this->conn->prepare($query);
@@ -79,12 +89,9 @@ class UserModel {
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        return $row['total'] > 0; // Trả về true nếu số khóa học > 0
+        return $row['total'] > 0;
     }
 
    
 } 
-
-
-
-?> 
+?>
