@@ -21,8 +21,9 @@ class EnrollmentController {
 
             if (!$this->enrollmentModel->checkEnrollment($student_id, $course_id)) {
                 $this->enrollmentModel->register($student_id, $course_id);
-                header("Location: index.php?controller=course&action=my_courses");
+                header("Location: index.php?controller=student&action=dashboard&filter=enrolled");
             } else {
+                header("Location: index.php?controller=student&action=dashboard&filter=enrolled");
                 echo "<script>alert('Bạn đã đăng ký khóa này rồi!'); history.back();</script>";
             }
         }    
