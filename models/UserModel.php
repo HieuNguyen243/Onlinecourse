@@ -65,6 +65,31 @@ class UserModel {
         return false;
     }
 
+    public function updatePassword($id, $newPassword) {
+        $query = "UPDATE " . $this->table . " SET password = :password WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $hashed_password = password_hash($newPassword, PASSWORD_DEFAULT);
+        $stmt->bindParam(':password', $hashed_password);
+        $stmt->bindParam(':id', $id);
+        
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+
+    public function updateProfile($id, $fullname, $email) {
+        $query = "UPDATE " . $this->table . " SET fullname = :fullname, email = :email WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':fullname', $fullname);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':id', $id);
+        
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
 
     // Kiểm tra xem User có đang sở hữu khóa học nào không
     public function hasCourses($userId) {

@@ -37,7 +37,7 @@ class AdminController {
             $email = $_POST['email'];
             $password = $_POST['password'];
             $fullname = $_POST['fullname'];
-            $role = $_POST['role'];
+            $role = 1;
 
 
             if ($this->userModel->create($username, $email, $password, $fullname, $role)) {
