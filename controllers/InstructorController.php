@@ -12,9 +12,7 @@ class InstructorController {
         $this->pdo = $pdo;
     }
 
-    // Trang dashboard hiển thị các chức năng của giảng viên
-  // [1] Trang dashboard hiển thị các chức năng của giảng viên
-    public function index() { // <--- Method đang được sử dụng
+    public function index() {
         $courses = [];
         if ($this->pdo && isset($_SESSION['user_id'])) {
             $courseModel = new CourseModel($this->pdo);
@@ -23,35 +21,49 @@ class InstructorController {
         require_once __DIR__ . '/../views/instructor/dashboard.php';
     }
     
-    // [2] THÊM METHOD NÀY ĐỂ GIẢI QUYẾT LỖI 404
     public function dashboard() {
-        $this->index(); // Gọi lại method index() để hiển thị Dashboard
+        $this->index(); 
     }
-// ...
 
-    // Hiển thị form tạo khóa học
     public function createCourse() {
         require_once __DIR__ . '/../views/instructor/create_course.php';
     }
 
-    // Xử lý tạo khóa học
     public function storeCourse() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['title'])) {
             $courseModel = new CourseModel($this->pdo);
-            $courseModel->createCourse(
-                $_POST['title'], 
-                $_POST['description'], 
-                $_SESSION['user_id'], 
-                $_POST['category_id'], 
-                $_POST['price']
-            );
-            header("Location: index.php?controller=instructor&action=index");
-            exit();
+            
+            // Xử lý dữ liệu POST an toàn hơn
+            $title = $_POST['title'] ?? '';
+            $description = $_POST['description'] ?? '';
+            $category_id = $_POST['category_id'] ?? null;
+            $price = $_POST['price'] ?? 0;
+            $instructor_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$instructor_id) {
+                // Xử lý trường hợp không có user_id (không đăng nhập)
+                header("Location: index.php?controller=auth&action=login");
+                exit();
+            }
+
+            if ($courseModel->createCourse(
+                $title, 
+                $description, 
+                $instructor_id, 
+                $category_id, 
+                $price
+            )) {
+                header("Location: index.php?controller=instructor&action=index");
+                exit();
+            } else {
+                // Xử lý lỗi khi tạo khóa học thất bại (ví dụ: category_id không tồn tại)
+                $error = "Lỗi: Không thể tạo khóa học. Kiểm tra Category ID.";
+                require_once __DIR__ . '/../views/instructor/create_course.php';
+            }
         }
         require_once __DIR__ . '/../views/instructor/create_course.php';
     }
 
-    // Xem danh sách học viên của khóa học
     public function viewStudents() {
         $course_id = isset($_GET['course_id']) ? $_GET['course_id'] : null;
         if (!$course_id) {
@@ -63,7 +75,10 @@ class InstructorController {
         require_once __DIR__ . '/../views/instructor/student_list.php';
     }
 
-    public function editCourse($id) {
+    public function editCourse() {
+        $id = isset($_GET['id']) ? $_GET['id'] : null;
+        if (!$id) { die("Thiếu ID khóa học"); }
+
         $courseModel = new CourseModel($this->pdo);
         $course = $courseModel->getCourseById($id);
         if (!$course) { die("Khóa học không tồn tại"); }
@@ -77,21 +92,17 @@ class InstructorController {
                 $_POST['id'], 
                 $_POST['title'], 
                 $_POST['description'], 
-                $_POST['category_id'], 
-                $_POST['price']
+                $_POST['category_id'] ?? null, 
+                $_POST['price'] ?? 0
             );
             header('Location: index.php?controller=Instructor&action=index');
             exit();
         }
-        if (isset($_GET['id'])) {
-            $courseModel = new CourseModel($this->pdo);
-            $course = $courseModel->getCourseById($_GET['id']);
-            if (!$course) { die("Khóa học không tồn tại"); }
-            require_once __DIR__ . '/../views/instructor/edit_course.php';
-        }
+        
+        // Nếu là GET request, gọi lại editCourse để hiển thị form
+        $this->editCourse();
     }
 
-    // Xem tiến độ học viên
     public function progress() {
         $courses = [];
         $students = [];
@@ -120,5 +131,3 @@ class InstructorController {
         exit();
     }
 }
-
-?>

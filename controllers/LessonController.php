@@ -70,54 +70,143 @@ class LessonController {
         }    
     }
 
- 
+    // Đã sửa: Sử dụng Model đã có PDO và xử lý logic POST/FILE
     public function store() {
-        $lessonModel = new LessonModel();
-        $lesson_id = $lessonModel->addLesson(...);
-        if (isset($_FILES['material'])) {
-            $fileName = $_FILES['material']['name'];
-            $fileTmp = $_FILES['material']['tmp_name'];
-            $targetDir = "uploads/materials/";
-            $targetFile = $targetDir . basename($fileName);
-            if (move_uploaded_file($fileTmp, $targetFile)) {
-                $materialModel = new MaterialModel(); 
-                $materialModel->addMaterial($lesson_id, $fileName, $targetFile, 'pdf');
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_id'])) {
+            $course_id = $_POST['course_id'];
+            $title = $_POST['title'];
+            $content = $_POST['content'];
+            $video_url = $_POST['video_url'];
+            $order = $_POST['order'];
+
+            $lesson_id = $this->lessonModel->addLesson($course_id, $title, $content, $video_url, $order);
+            
+            if ($lesson_id && isset($_FILES['material']) && $_FILES['material']['error'] === 0) {
+                $fileName = $_FILES['material']['name'];
+                $fileTmp = $_FILES['material']['tmp_name'];
+                $targetDir = "uploads/materials/";
+                // Tạo thư mục nếu chưa tồn tại
+                if (!is_dir($targetDir)) { mkdir($targetDir, 0777, true); }
+                $targetFile = $targetDir . basename($fileName);
+
+                if (move_uploaded_file($fileTmp, $targetFile)) {
+                    $this->materialModel->addMaterial($lesson_id, $fileName, $targetFile, 'pdf');
+                }
             }
+            
+            header("Location: index.php?controller=Lesson&action=manage&course_id=" . urlencode($course_id));
+            exit();
         }
     }
-    public function manage($course_id) {
-        $lessonModel = new LessonModel();
-        $lessons = $lessonModel->getLessonsByCourse($course_id);
+    
+    // Đã thêm: Phương thức hiển thị form tạo bài học mới
+    public function create() {
+        $course_id = isset($_GET['course_id']) ? $_GET['course_id'] : null;
+        if (!$course_id) {
+            header("Location: index.php?controller=instructor&action=index");
+            exit();
+        }
+        require_once 'views/instructor/add_lesson.php';
+    }
+
+    // Đã sửa: Sử dụng Model đã có PDO và lấy course_id
+    public function manage() {
+        $course_id = isset($_GET['course_id']) ? $_GET['course_id'] : null;
+        if (!$course_id) { 
+            // Nếu không có course_id, chuyển hướng về dashboard giảng viên
+            header("Location: index.php?controller=Instructor&action=index");
+            exit();
+        }
+        $lessons = $this->lessonModel->getLessonsByCourse($course_id);
+        
+        // Lấy tài liệu cho từng bài học để hiển thị trong view manage_lessons.php
+        foreach ($lessons as &$lesson) {
+            $lesson['materials'] = $this->materialModel->getMaterialsByLesson($lesson['id']);
+        }
+        unset($lesson); 
+        
         require_once 'views/instructor/manage_lessons.php';
     }
+
+    // Đã thêm action edit để hiển thị form chỉnh sửa
+    public function edit() {
+        if (isset($_GET['id']) && isset($_GET['course_id'])) {
+            $lesson = $this->lessonModel->getLessonById($_GET['id']);
+            $course_id = $_GET['course_id'];
+            if (!$lesson) {
+                // Có thể chuyển hướng về trang quản lý nếu bài học không tồn tại
+                header("Location: index.php?controller=Lesson&action=manage&course_id=" . urlencode($course_id));
+                exit();
+            }
+            require_once 'views/instructor/edit_lesson.php';
+        } else {
+            header("Location: index.php?controller=instructor&action=index");
+            exit();
+        }
+    }
+
+    // Đã sửa: Sử dụng Model đã có PDO và xử lý logic POST/GET
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $lessonModel = new LessonModel();
-            $lessonModel->updateLesson(
+            $course_id = $_POST['course_id'] ?? null;
+            if (!$course_id) {
+                 header("Location: index.php?controller=instructor&action=index");
+                 exit();
+            }
+            $this->lessonModel->updateLesson(
                 $_POST['id'], 
                 $_POST['title'], 
                 $_POST['content'], 
                 $_POST['video_url'], 
                 $_POST['order']
             );
-            header("Location: index.php?controller=Lesson&action=manage&course_id=" . $course_id);
+            
+            // Xử lý upload tài liệu mới (nếu có)
+            if (isset($_FILES['material']) && $_FILES['material']['error'] === 0) {
+                 $lesson_id = $_POST['id'];
+                 $fileName = $_FILES['material']['name'];
+                 $fileTmp = $_FILES['material']['tmp_name'];
+                 $targetDir = "uploads/materials/";
+                 if (!is_dir($targetDir)) { mkdir($targetDir, 0777, true); }
+                 $targetFile = $targetDir . basename($fileName);
+
+                 if (move_uploaded_file($fileTmp, $targetFile)) {
+                     $this->materialModel->addMaterial($lesson_id, $fileName, $targetFile, 'pdf');
+                 }
+            }
+            
+            header("Location: index.php?controller=Lesson&action=manage&course_id=" . urlencode($course_id));
             exit();
         }
-    }
-    public function delete($id, $course_id) {
-        $lessonModel = new LessonModel();
-        $lessonModel->deleteLesson($id);
-        header("Location: index.php?controller=Lesson&action=manage&course_id=" . $course_id);
-            exit();
-    }
-    public function deleteMaterial($material_id, $course_id) {
-        $materialModel = new MaterialModel();
-        $materialModel->deleteMaterial($material_id);
-       header("Location: index.php?controller=Lesson&action=manage&course_id=" . $course_id);
-            exit();
+        // Nếu là GET request đến action=update mà không có id, chuyển hướng về index
+        header("Location: index.php?controller=instructor&action=index");
+        exit();
     }
     
+    // Đã sửa: Sử dụng Model đã có PDO và lấy course_id
+    public function delete() {
+        $id = isset($_GET['id']) ? $_GET['id'] : null;
+        $course_id = isset($_GET['course_id']) ? $_GET['course_id'] : null;
+        if ($id && $course_id) {
+            $this->lessonModel->deleteLesson($id);
+            header("Location: index.php?controller=Lesson&action=manage&course_id=" . urlencode($course_id));
+            exit();
+        }
+        header("Location: index.php?controller=instructor&action=index");
+        exit();
+    }
     
-   }
-
+    // Đã sửa: Sử dụng Model đã có PDO và lấy course_id
+    public function deleteMaterial() {
+        $material_id = isset($_GET['material_id']) ? $_GET['material_id'] : null;
+        $course_id = isset($_GET['course_id']) ? $_GET['course_id'] : null;
+        if ($material_id && $course_id) {
+            $this->materialModel->deleteMaterial($material_id);
+            header("Location: index.php?controller=Lesson&action=manage&course_id=" . urlencode($course_id));
+            exit();
+        }
+        header("Location: index.php?controller=instructor&action=index");
+        exit();
+    }
+}
 ?>
