@@ -1,23 +1,33 @@
 <?php 
 require_once './controllers/CourseController.php';
-require_once './controllers/CategoryController.php';
+require_once './controllers/AuthController.php';
+require_once './controllers/EnrollmentController.php';
+require_once './controllers/LessonController.php';
+require_once './models/CategoryModel.php';
+require_once './models/CourseModel.php';
 
 class HomeController {
-    private $courseController;
-    private $categoryController;
+    private $courseModel;
+    private $categoryModel;
 
     public function __construct($pdo) {
-        $this->courseController = new CourseController($pdo);
-        $this->categoryController = new CategoryController($pdo);
+        $this->courseModel = new CourseModel($pdo);
+        $this->categoryModel = new CategoryModel($pdo);
     }
 
     public function index() {
-        if (!isset($_SESSION['user_id'])) {
-            header("Location: index.php?controller=auth&action=login");
-            exit();
+        $categories = $this->categoryModel->getAllCategories();
+        $allcourses = $this->courseModel->getAllCourses();
+
+        $userrole = isset($_SESSION['role']) ? $_SESSION['role'] : 'guest';
+        if ($userrole === 2) {
+            header("Location: index.php?controller=admin&action=dashboard");
+        } elseif ($userrole === 1) {
+            header("Location: index.php?controller=instructor&action=dashboard");
+        }elseif ($userrole === 0) {
+            header("Location: index.php?controller=student&action=dashboard");
         } else {
-            header("Location: index.php?controller=Instructor&action=index");
-            exit();
+            require './views/home/index.php';
         }
     }
 }

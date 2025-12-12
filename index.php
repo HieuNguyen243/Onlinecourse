@@ -6,6 +6,7 @@ require_once './config/Database.php';
 try {
     $database = new Database();
     $db = $database->connect();
+    
 } catch (Exception $e) {
     die("Lỗi kết nối CSDL: " . $e->getMessage());
 }
@@ -16,7 +17,6 @@ $actionInput     = isset($_GET['action']) ? $_GET['action'] : 'index';
 
 $controllerName = ucfirst($controllerInput) . 'Controller'; 
 $controllerPath = "./controllers/$controllerName.php";
-
 
 if (file_exists($controllerPath)) {
     require_once $controllerPath;

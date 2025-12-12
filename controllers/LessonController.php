@@ -14,16 +14,43 @@ class LessonController {
         $this->materialModel = new MaterialModel($pdo);
     }
 
+
     public function detail() {
         if (isset($_GET['lesson_id']) && isset($_SESSION['user_id'])) {
             $lesson_id = $_GET['lesson_id'];
-            $material = $this->materialModel->getMaterialByLesson($lesson_id);
+            $course_id = $_GET['course_id']; 
+            $student_id = $_SESSION['user_id'];
+
+            
+            $material = $this->materialModel->getMaterialsByLesson($lesson_id);
+            
+            $currentLesson = $this->lessonModel->getLessonById($lesson_id);
+            $listLessons = $this->lessonModel->getLessonsByCourse($course_id);
+            
+            foreach ($listLessons as &$l) {
+                $l['completed'] = $this->lessonModel->isLessonCompleted($student_id, $l['id']);
+                $l['is_current'] = ($l['id'] == $lesson_id);
+            }
+            unset($l);
+            $next_lesson_id = null;
+            $foundCurrent = false;
+            foreach ($listLessons as $item) {
+                if ($foundCurrent) {
+                    $next_lesson_id = $item['id'];
+                    break;
+                }
+                if ($item['id'] == $lesson_id) {
+                    $foundCurrent = true;
+                }
+            }
+
             require './views/lesson/detail.php';
         } else {
             header("Location: index.php?controller=auth&action=login");
             exit();
         }
     }
+
     public function complete() {
         if (isset($_POST['lesson_id']) && isset($_POST['course_id']) && isset($_SESSION['user_id'])) {
             $lesson_id = $_POST['lesson_id'];
@@ -39,6 +66,7 @@ class LessonController {
             $this->enrollmentModel->updateProgressDirect($student_id, $course_id, $percent);
 
             header("Location: index.php?controller=lesson&action=detail&course_id=$course_id");
+            exit();
         }    
     }
 

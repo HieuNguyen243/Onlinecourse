@@ -7,7 +7,11 @@ class CourseModel {
     }
 
     public function getAllCourses() {
-        $sql = "SELECT * FROM courses";
+        $sql = "SELECT c.*, u.fullname as instructor_name, cat.name as category_name 
+                FROM courses c 
+                LEFT JOIN users u ON c.instructor_id = u.id 
+                LEFT JOIN categories cat ON c.category_id = cat.id
+                ORDER BY c.created_at DESC";
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }   
@@ -27,7 +31,8 @@ class CourseModel {
     }
 
     public function getEnrolledCourses($student_id) {
-        $sql = "SELECT c.* FROM courses c 
+        $sql = "SELECT c.*, e.progress, e.status as enrollment_status 
+                FROM courses c 
                 JOIN enrollments e ON c.id = e.course_id 
                 WHERE e.student_id = ?";
         $stmt = $this->pdo->prepare($sql);
@@ -35,34 +40,15 @@ class CourseModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getCoursesByInstructor($instructor_id) {
-        $sql = "SELECT * FROM courses WHERE instructor_id = ?";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$instructor_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function createCourse($title, $desc, $instructor_id, $cat_id, $price) {
-        $sql = "INSERT INTO courses (title, description, instructor_id, category_id, price) VALUES (?, ?, ?, ?, ?)";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$title, $desc, $instructor_id, $cat_id, $price]);
-    }
-
-    public function updateCourse($id, $title, $desc, $cat_id, $price) {
-        $sql = "UPDATE courses SET title=?, description=?, category_id=?, price=? WHERE id=?";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$title, $desc, $cat_id, $price, $id]);
-    }
-
-    public function deleteCourse($id) {
-        $sql = "DELETE FROM courses WHERE id=?";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$id]);
-    }
     public function getCourseById($id) {
-        $sql = "SELECT * FROM courses WHERE id = ?";
+        $sql = "SELECT c.*, u.fullname as instructor_name, cat.name as category_name 
+                FROM courses c 
+                LEFT JOIN users u ON c.instructor_id = u.id 
+                LEFT JOIN categories cat ON c.category_id = cat.id
+                WHERE c.id = ?";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
 }
