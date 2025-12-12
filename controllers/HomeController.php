@@ -12,10 +12,12 @@ class HomeController {
     }
 
     public function index() {
-        $categories = $this->categoryController->getAllCategories();
-        $allcourses = $this->courseController->getAllCourses();
-
-        // Chỉ dành cho giảng viên - hiển thị trang chủ
-        require './views/home/index.php';
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?controller=auth&action=login");
+            exit();
+        } else {
+            header("Location: index.php?controller=Instructor&action=index");
+            exit();
+        }
     }
 }

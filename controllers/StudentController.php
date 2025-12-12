@@ -26,4 +26,15 @@ class StudentController {
             exit();
         }
     }
+
+    public function myCourses() {
+        if(isset($_SESSION['user_id'])) {
+            $student_id = $_SESSION['user_id'];
+            $enrolledCourses = $this->courseModel->getEnrolledCourses($student_id);
+            require './views/student/my_courses.php';
+        } else {
+            header("Location: index.php?controller=auth&action=login");
+            exit();
+        }
+    }
 }
