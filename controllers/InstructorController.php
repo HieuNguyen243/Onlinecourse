@@ -13,7 +13,8 @@ class InstructorController {
     }
 
     // Trang dashboard hiển thị các chức năng của giảng viên
-    public function index() {
+  // [1] Trang dashboard hiển thị các chức năng của giảng viên
+    public function index() { // <--- Method đang được sử dụng
         $courses = [];
         if ($this->pdo && isset($_SESSION['user_id'])) {
             $courseModel = new CourseModel($this->pdo);
@@ -21,6 +22,12 @@ class InstructorController {
         }
         require_once __DIR__ . '/../views/instructor/dashboard.php';
     }
+    
+    // [2] THÊM METHOD NÀY ĐỂ GIẢI QUYẾT LỖI 404
+    public function dashboard() {
+        $this->index(); // Gọi lại method index() để hiển thị Dashboard
+    }
+// ...
 
     // Hiển thị form tạo khóa học
     public function createCourse() {
