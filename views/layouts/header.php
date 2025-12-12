@@ -95,9 +95,9 @@ function isHeaderActive($ctr, $act, $filter = '') {
                                         <span class="font-medium">Bảng điều khiển</span>
                                     </a>
 
-                                    <a href="index.php?controller=manageprofile&action=index" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
+                                    <a href="index.php?controller=manageprofile&action=editProfile" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
                                         <i class="fas fa-tachometer-alt w-6 text-center"></i>
-                                        <span class="font-medium">Thông tin tài khoản</span>
+                                        <span class="font-medium">Chỉnh sửa thông tin tài khoản</span>
                                     </a>
 
                                     <a href="index.php?controller=auth&action=logout" class="flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition">
