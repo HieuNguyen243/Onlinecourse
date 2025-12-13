@@ -51,4 +51,37 @@ class CourseModel {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function countAll() {
+        $query = "SELECT COUNT(*) FROM courses";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchColumn();
+    }
+
+    public function getCoursesByStatus($status) {
+        $sql = "SELECT c.*, u.fullname as instructor_name, cat.name as category_name,
+                (SELECT COUNT(*) FROM enrollments e WHERE e.course_id = c.id) as student_count
+                FROM courses c 
+                LEFT JOIN users u ON c.instructor_id = u.id 
+                LEFT JOIN categories cat ON c.category_id = cat.id
+                WHERE c.status = ?
+                ORDER BY c.created_at DESC";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$status]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function updateStatus($courseId, $status) {
+        $sql = "UPDATE courses SET status = ? WHERE id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$status, $courseId]);
+    }
+
+    public function getCoursesByInstructorId($instructorId) {
+        $sql = "SELECT * FROM courses WHERE instructor_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$instructorId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }

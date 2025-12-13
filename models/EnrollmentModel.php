@@ -25,5 +25,12 @@ class EnrollmentModel {
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([$percent, $status, $student_id, $course_id]);
     }
+
+    public function countByStudentId($student_id) {
+        $sql = "SELECT COUNT(*) FROM enrollments WHERE student_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$student_id]);
+        return $stmt->fetchColumn();
+    }
 }
 ?>
