@@ -85,8 +85,8 @@
             </a>
 
             <a href="index.php?controller=admin&action=manageAdmin" 
-               onclick="alert('Chức năng đang phát triển'); return false;"
-               class="group relative bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-white/50 cursor-pointer overflow-hidden">
+              <a href="index.php?controller=admin&action=manageAdmin" 
+                class="group relative bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-white/50 cursor-pointer overflow-hidden">
                 <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
                     <i class="fas fa-user-shield text-9xl text-red-500 transform rotate-12 translate-x-4 -translate-y-4"></i>
                 </div>
