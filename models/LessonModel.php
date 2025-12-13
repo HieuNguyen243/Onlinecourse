@@ -60,20 +60,26 @@ class LessonModel {
     //NGUYỄN NGUYÊN
     public function addLesson($course_id, $title, $content, $video_url, $order) {
         $sql = "INSERT INTO lessons (course_id, title, content, video_url, `order`) VALUES (?, ?, ?, ?, ?)";
-        return $this->insertGetId($sql, [$course_id, $title, $content, $video_url, $order]);
-}
+        $stmt = $this->pdo->prepare($sql);
+        if ($stmt->execute([$course_id, $title, $content, $video_url, $order])) {
+            return $this->pdo->lastInsertId(); // Trả về ID bài học vừa tạo
+        }
+        return false;
+    }
     
 
     //  Cập nhật nội dung bài học
     public function updateLesson($id, $title, $content, $video_url, $order) {
         $sql = "UPDATE lessons SET title=?, content=?, video_url=?, `order`=? WHERE id=?";
-        return $this->execute($sql, [$title, $content, $video_url, $order, $id]);
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$title, $content, $video_url, $order, $id]);
     }
 
     // Xóa bài học
     public function deleteLesson($id) {
         $sql = "DELETE FROM lessons WHERE id=?";
-        return $this->execute($sql, [$id]);
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$id]);
     }
 }
 ?>

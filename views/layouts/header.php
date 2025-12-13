@@ -85,6 +85,13 @@ function isActive($ctr, $act = null) {
                             Khóa của tôi
                         </a>
                         <?php endif; ?>
+
+                        <?php if(isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] == 1): ?>
+                        <a href="index.php?controller=Instructor&action=progress" class="nav-link <?php echo isActive('Instructor', 'progress'); ?>">
+                            Theo dõi tiến độ
+                        </a>
+                        <?php endif; ?>
+
                     </div>
                 </div>
                 
@@ -190,6 +197,12 @@ function isActive($ctr, $act = null) {
                     <i class="fas fa-book w-6"></i> Khóa học
                 </a>
                 
+                <?php if(isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] == 1): ?>
+                <a href="index.php?controller=Instructor&action=progress" class="block px-3 py-2 rounded-lg text-base font-medium <?php echo ($currentController == 'Instructor' && $currentAction == 'progress') ? 'bg-purple-50 text-purple-600' : 'text-gray-700 hover:bg-gray-50'; ?>">
+                    <i class="fas fa-chart-pie w-6"></i> Theo dõi tiến độ
+                </a>
+                <?php endif; ?>
+
                 <?php if(isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] == 0): ?>
                 <a href="index.php?controller=course&action=listEnrolledCourses" class="block px-3 py-2 rounded-lg text-base font-medium <?php echo ($currentController == 'course' && $currentAction == 'listEnrolledCourses') ? 'bg-purple-50 text-purple-600' : 'text-gray-700 hover:bg-gray-50'; ?>">
                     <i class="fas fa-book-reader w-6"></i> Khóa của tôi

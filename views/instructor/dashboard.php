@@ -12,27 +12,8 @@
         </a>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <div class="lg:col-span-3">
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sticky top-24">
-                <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Quản lý</h4>
-                <nav class="space-y-1">
-                    <a href="index.php?controller=Instructor&action=dashboard" class="flex items-center px-4 py-2 text-sm transition rounded-lg bg-purple-50 text-purple-700 font-semibold">
-                        <i class="fas fa-tachometer-alt w-6"></i>
-                        <span>Dashboard Tổng quan</span>
-                    </a>
-                    <a href="index.php?controller=Instructor&action=progress" class="flex items-center px-4 py-2 text-sm transition rounded-lg text-gray-700 hover:bg-gray-50 hover:text-purple-600">
-                        <i class="fas fa-chart-line w-6"></i>
-                        <span>Theo dõi Tiến độ</span>
-                    </a>
-                    <a href="index.php?controller=Instructor&action=viewStudents" class="flex items-center px-4 py-2 text-sm transition rounded-lg text-gray-700 hover:bg-gray-50 hover:text-purple-600">
-                        <i class="fas fa-users w-6"></i>
-                        <span>Danh sách Học viên</span>
-                    </a>
-                </nav>
-            </div>
-        </div>
+        
 
         <div class="lg:col-span-9">
             <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Khóa học của tôi (<?php echo count($courses); ?>)</h3>

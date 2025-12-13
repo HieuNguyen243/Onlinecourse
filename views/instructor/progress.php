@@ -23,7 +23,7 @@
                 </select>
                 
                 <?php if (!empty($_GET['course_id'])): ?>
-                    <a href="index.php?controller=Instructor&action=progress" class="text-sm text-red-500 hover:text-red-700 font-medium">Xóa lọc</a>
+                    <a href="index.php?controller=Instructor&action=progress" class="text-sm text-red-500 hover:text-red-700 font-medium">Reset</a>
                 <?php endif; ?>
             </form>
         </div>

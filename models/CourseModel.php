@@ -78,35 +78,59 @@ class CourseModel {
     }
 
     // [CREATE] Tạo khóa học mới -> Status mặc định là 'pending'
-    public function createCourse($title, $description, $instructor_id, $category_id = null, $price = 0, $image = null) {
-        $sql = "INSERT INTO courses (title, description, instructor_id, category_id, price, image, status, created_at) 
-                VALUES (:title, :description, :instructor_id, :category_id, :price, :image, 'pending', NOW())";
+    public function createCourse($title, $description, $instructor_id, $category_id = null, $price = 0, $duration_weeks = 0, $level = 'Beginner', $image = null) {
+        $sql = "INSERT INTO courses (title, description, instructor_id, category_id, price, duration_weeks, level, image, status, created_at) 
+                VALUES (:title, :description, :instructor_id, :category_id, :price, :duration_weeks, :level, :image, 'pending', NOW())";
+        
         $stmt = $this->pdo->prepare($sql);
+        
         $stmt->bindParam(':title', $title);
         $stmt->bindParam(':description', $description);
         $stmt->bindParam(':instructor_id', $instructor_id);
         $stmt->bindParam(':category_id', $category_id);
         $stmt->bindParam(':price', $price);
+        $stmt->bindParam(':duration_weeks', $duration_weeks); // Mới
+        $stmt->bindParam(':level', $level);                   // Mới
         $stmt->bindParam(':image', $image);
-        return $stmt->execute();
+        
+        if ($stmt->execute()) {
+            return $this->pdo->lastInsertId(); // [THAY ĐỔI] Trả về ID khóa học mới
+        }
+        return false;
     }
 
-    public function updateCourse($id, $title, $description, $category_id = null, $price = 0, $image = null) {
+    public function updateCourse($id, $title, $description, $category_id, $price, $duration_weeks, $level, $image = null) {
+        // SQL cơ bản cập nhật các thông tin văn bản
+        $sql = "UPDATE courses SET 
+                    title = :title, 
+                    description = :description, 
+                    category_id = :category_id, 
+                    price = :price, 
+                    duration_weeks = :duration_weeks, 
+                    level = :level";
+        
+        // Nếu có ảnh mới ($image không null), nối thêm câu lệnh update ảnh
         if ($image) {
-            $sql = "UPDATE courses SET title = :title, description = :description, category_id = :category_id, price = :price, image = :image, updated_at = NOW() WHERE id = :id";
-        } else {
-            $sql = "UPDATE courses SET title = :title, description = :description, category_id = :category_id, price = :price, updated_at = NOW() WHERE id = :id";
+            $sql .= ", image = :image";
         }
+
+        $sql .= ", updated_at = NOW() WHERE id = :id";
         
         $stmt = $this->pdo->prepare($sql);
+        
         $stmt->bindParam(':title', $title);
         $stmt->bindParam(':description', $description);
         $stmt->bindParam(':category_id', $category_id);
         $stmt->bindParam(':price', $price);
+        $stmt->bindParam(':duration_weeks', $duration_weeks);
+        $stmt->bindParam(':level', $level);
         $stmt->bindParam(':id', $id);
+        
+        // Chỉ bind param image nếu có ảnh mới
         if ($image) {
             $stmt->bindParam(':image', $image);
         }
+
         return $stmt->execute();
     }
 
