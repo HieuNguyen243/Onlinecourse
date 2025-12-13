@@ -9,8 +9,10 @@ class CourseController {
     private $courseModel;
     private $lessonModel;
     private $categoryModel;
+    public $pdo; // Public để truy cập từ bên ngoài nếu cần (như trong detail)
 
     public function __construct($pdo) {
+        $this->pdo = $pdo;
         $this->courseModel = new CourseModel($pdo);
         $this->lessonModel = new LessonModel($pdo);
         $this->categoryModel = new CategoryModel($pdo);
@@ -19,7 +21,6 @@ class CourseController {
     public function listAllCourses() {
         $categories = $this->categoryModel->getAllCategories();
         $allcourses = $this->courseModel->getAllCourses();
-        
         require './views/courses/index.php';
     }
 
@@ -33,7 +34,6 @@ class CourseController {
         } else {
             $allcourses = $this->courseModel->getAllCourses();
         }
-        
         require './views/courses/index.php';
     }
 
@@ -47,26 +47,36 @@ class CourseController {
         } else {
             $allcourses = $this->courseModel->getAllCourses();
         }
-
         require './views/courses/index.php';
     }
 
+    // Đây là function từ nhánh Tan, đã được gộp vào
     public function listEnrolledCourses() {
         if(isset($_SESSION['user_id'])) {
             $student_id = $_SESSION['user_id'];
-            $result = $this->courseModel->getEnrolledCourses($student_id);
+            // Gọi hàm từ model đã được sửa (lấy đủ thông tin progress, image...)
+            $courses = $this->courseModel->getEnrolledCourses($student_id);
             require './views/student/my_courses.php'; 
         }
         else {
-            header("Location: index.php?controller=Auth&action=Login");
+            header("Location: index.php?controller=auth&action=login");
             exit();
         }
-        
     }
 
     public function detail() {
+        if (!isset($_GET['course_id'])) {
+            header("Location: index.php");
+            exit();
+        }
+        
         $course_id = $_GET['course_id'];
         $course = $this->courseModel->getCourseById($course_id);
+        
+        if (!$course) {
+            echo "Khóa học không tồn tại";
+            return;
+        }
         
         $isEnrolled = false;
         $lessons = $this->lessonModel->getLessonsByCourse($course_id);
@@ -74,7 +84,7 @@ class CourseController {
         if(isset($_SESSION['user_id'])) {
             $student_id = $_SESSION['user_id'];
             
-            $enrollmentModel = new EnrollmentModel($this->courseModel->pdo);
+            $enrollmentModel = new EnrollmentModel($this->pdo);
             $isEnrolled = $enrollmentModel->checkEnrollment($student_id, $course_id); 
             
             foreach ($lessons as &$lesson) {
