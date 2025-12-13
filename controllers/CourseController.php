@@ -50,7 +50,6 @@ class CourseController {
         require './views/courses/index.php';
     }
 
-    // Đây là function từ nhánh Tan, đã được gộp vào
     public function listEnrolledCourses() {
         if(isset($_SESSION['user_id'])) {
             $student_id = $_SESSION['user_id'];
@@ -77,6 +76,8 @@ class CourseController {
             echo "Khóa học không tồn tại";
             return;
         }
+
+        // (no restrictions: original behavior shows any course details)
         
         $isEnrolled = false;
         $lessons = $this->lessonModel->getLessonsByCourse($course_id);

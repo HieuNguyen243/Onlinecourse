@@ -1,21 +1,18 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/UserModel.php';
-
+require_once __DIR__ . '/../models/CourseModel.php'; // Đã thêm dòng này
 
 class AdminController {
     private $db;
     private $userModel;
-
 
     public function __construct() {
         $database = new Database();
         $this->db = $database->connect();
         $this->userModel = new UserModel($this->db);
 
-
         if (session_status() === PHP_SESSION_NONE) session_start();
-
 
         if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 2) {
             header("Location: index.php?controller=auth&action=login");
@@ -23,14 +20,12 @@ class AdminController {
         }
     }
 
-
     public function index() {
         $users = $this->userModel->getAll();
         require_once 'views/admin/users/manage.php';
     }
-
-
-   
+    
+    // Quản lý Users (Giữ nguyên)
     public function createUser() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $username = $_POST['username'];
@@ -38,7 +33,6 @@ class AdminController {
             $password = $_POST['password'];
             $fullname = $_POST['fullname'];
             $role = $_POST['role'];
-
 
             if ($this->userModel->create($username, $email, $password, $fullname, $role)) {
                 header("Location: index.php?controller=admin&action=index");
@@ -51,12 +45,9 @@ class AdminController {
         }
     }
 
-
-   
     public function deleteUser() {
         if (isset($_GET['id'])) {
             $id = $_GET['id'];
-
             $user = $this->userModel->getById($id);
 
             if ($user) {
@@ -76,5 +67,33 @@ class AdminController {
         }
     }
 
+    // --- [NEW] DUYỆT KHÓA HỌC ---
+
+    public function pendingCourses() {
+        $courseModel = new CourseModel($this->db);
+        $pendingCourses = $courseModel->getPendingCourses();
+        require_once 'views/admin/courses/pending.php';
+    }
+
+    public function approve() {
+        if (isset($_GET['id'])) {
+            $courseModel = new CourseModel($this->db);
+            $courseModel->approveCourse($_GET['id']);
+            header("Location: index.php?controller=admin&action=pendingCourses");
+        }
+    }
+    
+    public function reject() {
+        if (isset($_GET['id'])) {
+            $courseModel = new CourseModel($this->db);
+            $courseModel->rejectCourse($_GET['id']);
+            header("Location: index.php?controller=admin&action=pendingCourses");
+        }
+    }
+    
+    // Dashboard Admin: Chuyển hướng đến trang quản lý user hoặc pending tùy ý
+    public function dashboard() {
+        $this->index(); 
+    }
 }
 ?>

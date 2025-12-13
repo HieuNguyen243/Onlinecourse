@@ -4,6 +4,7 @@
     <div class="bg-white p-8 rounded-xl shadow-2xl border border-gray-100">
         <h3 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-3">Tạo Khóa Học Mới</h3>
         
+        
         <form action="index.php?controller=Instructor&action=storeCourse" method="post" class="space-y-5">
             
             <div class="input-group">
