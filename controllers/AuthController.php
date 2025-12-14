@@ -26,9 +26,19 @@ class AuthController {
                 $_SESSION['fullname'] = $user['fullname'];
                 $_SESSION['role'] = $user['role'];
 
-              
-                header("Location: index.php?controller=home&action=index");
-                exit();
+              if ($user['role'] == 2) {
+            header("Location: index.php?controller=admin&action=dashboard");
+            exit();
+        } 
+        elseif ($user['role'] == 1) {
+            header("Location: index.php?controller=instructor&action=dashboard");
+            exit();
+        } 
+        else {
+            header("Location: index.php?controller=home&action=index");
+            exit();
+        }
+                
             } else {
                 $error = "Sai tên đăng nhập hoặc mật khẩu!";
                 require_once 'views/auth/login.php';
@@ -44,9 +54,22 @@ class AuthController {
             $email = $_POST['email'];
             $password = $_POST['password'];
             $fullname = $_POST['fullname'];
+            $role = isset($_POST['role']) ? (int)$_POST['role'] : 0;
 
-            if ($this->userModel->create($username, $email, $password, $fullname)) {
-                header("Location: index.php?controller=auth&action=login");
+            if ($this->userModel->create($username, $email, $password, $fullname, $role)) {
+                // Auto-login after successful registration
+                $user = $this->userModel->findByEmail($email);
+                if ($user) {
+                    if (session_status() === PHP_SESSION_NONE) session_start();
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['fullname'] = $user['fullname'];
+                    $_SESSION['role'] = $user['role'];
+
+                    // Redirect to home controller which will forward to the correct dashboard
+                    header("Location: index.php?controller=home&action=index");
+                    exit();
+                }
             } else {
                 $error = "Đăng ký thất bại (Username hoặc Email có thể đã tồn tại)";
                 require_once 'views/auth/register.php';
@@ -63,5 +86,8 @@ class AuthController {
         header("Location: index.php?controller=auth&action=login");
         exit();
     }
+
+
 }
+
 ?> 

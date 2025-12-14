@@ -25,5 +25,26 @@ class EnrollmentModel {
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([$percent, $status, $student_id, $course_id]);
     }
+    
+    public function getStudentsByCourse($course_id) {
+        $sql = "SELECT u.fullname, u.email, e.enrolled_date, e.progress, e.status
+                FROM enrollments e
+                JOIN users u ON e.student_id = u.id
+                WHERE e.course_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$course_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function updateProgress($enrollment_id, $course_id) {
+        $sqlTotal = "SELECT COUNT(*) as total FROM lessons WHERE course_id = ?";
+        $sqlCompleted = "SELECT COUNT(*) as completed FROM lesson_completions WHERE enrolled_id = ?";
+
+    public function countByStudentId($student_id) {
+        $sql = "SELECT COUNT(*) FROM enrollments WHERE student_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$student_id]);
+        return $stmt->fetchColumn();
+    }
 }
 ?>

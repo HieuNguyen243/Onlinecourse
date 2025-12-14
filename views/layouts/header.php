@@ -1,5 +1,7 @@
+
 <?php
 // Xác định link Dashboard dựa trên Role
+// Logic này giúp click vào LOGO sẽ về đúng trang Dashboard
 $dashboardLink = 'index.php'; // Mặc định cho khách
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role'] == 0) $dashboardLink = 'index.php?controller=student&action=dashboard';
@@ -14,7 +16,8 @@ $currFilter = $_GET['filter'] ?? '';
 
 function isHeaderActive($ctr, $act, $filter = '') {
     global $currCtr, $currAct, $currFilter;
-    if ($currCtr == $ctr && $currAct == $act && $currFilter == $filter) {
+    if ($currCtr == $ctr && $currAct == $act) {
+        if ($filter !== '' && $currFilter !== $filter) return 'text-gray-600 hover:text-purple-600 font-medium';
         return 'text-purple-600 font-bold after:w-full';
     }
     return 'text-gray-600 hover:text-purple-600 font-medium';
@@ -55,19 +58,32 @@ function isHeaderActive($ctr, $act, $filter = '') {
                         </div>
                         <span class="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
                             EduLearn
+                            <?php if(isset($_SESSION['role']) && $_SESSION['role'] == 2): ?>
+                                <span class="text-xs text-red-500 border border-red-500 px-1 ml-1 rounded uppercase">Admin</span>
+                            <?php endif; ?>
                         </span>
                     </a>
                     
                     <div class="hidden md:flex items-center space-x-8">
-                        <a href="<?php echo $dashboardLink; ?>" class="nav-link <?php echo isHeaderActive('student', 'dashboard', ''); ?>">
-                            Trang chủ
-                        </a>
-                        
-                        <?php if(isset($_SESSION['user_id']) && $_SESSION['role'] == 0): ?>
-                        <a href="index.php?controller=student&action=dashboard&filter=enrolled" class="nav-link <?php echo isHeaderActive('student', 'dashboard', 'enrolled'); ?>">
-                            Khóa học của tôi
+                        <?php if(isset($_SESSION['role']) && $_SESSION['role'] == 2): ?>
+                            <?php else: ?>
+                            <a href="<?php echo $dashboardLink; ?>" class="nav-link <?php echo isHeaderActive('student', 'dashboard', ''); ?>">
+                                Trang chủ
+                            </a>
+                            
+                            <?php if(isset($_SESSION['user_id']) && $_SESSION['role'] == 0): ?>
+                            <a href="index.php?controller=student&action=dashboard&filter=enrolled" class="nav-link <?php echo isHeaderActive('student', 'dashboard', 'enrolled'); ?>">
+                                Khóa học của tôi
+                            </a>
+                            <?php endif; ?>
+                        <?php endif; ?>
+
+                        <?php if(isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] == 1): ?>
+                        <a href="index.php?controller=Instructor&action=progress" class="nav-link <?php echo isActive('Instructor', 'progress'); ?>">
+                            Theo dõi tiến độ
                         </a>
                         <?php endif; ?>
+
                     </div>
                 </div>
                 
@@ -95,9 +111,9 @@ function isHeaderActive($ctr, $act, $filter = '') {
                                         <span class="font-medium">Bảng điều khiển</span>
                                     </a>
 
-                                    <a href="index.php?controller=manageprofile&action=index" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
-                                        <i class="fas fa-tachometer-alt w-6 text-center"></i>
-                                        <span class="font-medium">Thông tin tài khoản</span>
+                                    <a href="index.php?controller=manageprofile&action=editProfile" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
+                                        <i class="fas fa-user-edit w-6 text-center"></i>
+                                        <span class="font-medium">Chỉnh sửa thông tin</span>
                                     </a>
 
                                     <a href="index.php?controller=auth&action=logout" class="flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition">
@@ -113,6 +129,42 @@ function isHeaderActive($ctr, $act, $filter = '') {
                             <a href="index.php?controller=auth&action=register" class="px-5 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-800 shadow-lg transition text-sm font-medium">Đăng ký</a>
                         </div>
                     <?php endif; ?>
+                    
+                    <button id="mobile-menu-btn" class="md:hidden p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="mobile-menu" class="hidden md:hidden border-t border-gray-100 bg-white">
+            <div class="px-4 py-3 space-y-1">
+                <a href="index.php" class="block px-3 py-2 rounded-lg text-base font-medium <?php echo ($currentController == 'home') ? 'bg-purple-50 text-purple-600' : 'text-gray-700 hover:bg-gray-50'; ?>">
+                    <i class="fas fa-home w-6"></i> Trang chủ
+                </a>
+                <a href="index.php?controller=course&action=listAllCourses" class="block px-3 py-2 rounded-lg text-base font-medium <?php echo ($currentController == 'course' && $currentAction == 'listAllCourses') ? 'bg-purple-50 text-purple-600' : 'text-gray-700 hover:bg-gray-50'; ?>">
+                    <i class="fas fa-book w-6"></i> Khóa học
+                </a>
+                
+                <?php if(isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] == 1): ?>
+                <a href="index.php?controller=Instructor&action=progress" class="block px-3 py-2 rounded-lg text-base font-medium <?php echo ($currentController == 'Instructor' && $currentAction == 'progress') ? 'bg-purple-50 text-purple-600' : 'text-gray-700 hover:bg-gray-50'; ?>">
+                    <i class="fas fa-chart-pie w-6"></i> Theo dõi tiến độ
+                </a>
+                <?php endif; ?>
+
+                <?php if(isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] == 0): ?>
+                <a href="index.php?controller=course&action=listEnrolledCourses" class="block px-3 py-2 rounded-lg text-base font-medium <?php echo ($currentController == 'course' && $currentAction == 'listEnrolledCourses') ? 'bg-purple-50 text-purple-600' : 'text-gray-700 hover:bg-gray-50'; ?>">
+                    <i class="fas fa-book-reader w-6"></i> Khóa của tôi
+                </a>
+                <?php endif; ?>
+                
+                <div class="pt-4 pb-2">
+                    <form action="index.php?controller=course&action=searchCourses" method="POST">
+                        <div class="relative">
+                            <input type="text" name="keyword" placeholder="Tìm kiếm khóa học..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -135,4 +187,5 @@ function isHeaderActive($ctr, $act, $filter = '') {
             }
         });
     </script>
+    
     <main class="flex-grow">

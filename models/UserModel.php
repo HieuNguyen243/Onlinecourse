@@ -23,26 +23,36 @@ class UserModel {
         $stmt->bindParam(':fullname', $fullname);
         $stmt->bindParam(':role', $role);
 
-        if ($stmt->execute()) {
-            return true;
+        try {
+            if ($stmt->execute()) {
+                return true;
+            }
+        } catch (PDOException $e) {
+            return false;
         }
         return false;
     }
 
     public function findByEmail($email) {
         $query = "SELECT * FROM " . $this->table . " WHERE email = :email";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            if (strpos($e->getMessage(), '2006') !== false || strpos($e->getMessage(), 'HY000') !== false) {
+                
+                $stmt = $this->conn->prepare($query);
+                $stmt->bindParam(':email', $email);
+                $stmt->execute();
+                return $stmt->fetch(PDO::FETCH_ASSOC);
+            }
+            throw $e;
+        }
     }
 
-     public function getAll() {
-        $query = "SELECT * FROM " . $this->table . " ORDER BY created_at DESC";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
 
 
     public function getById($id) {
@@ -91,7 +101,6 @@ class UserModel {
         return false;
     }
 
-    // Kiểm tra xem User có đang sở hữu khóa học nào không
     public function hasCourses($userId) {
         $query = "SELECT COUNT(*) as total FROM courses WHERE instructor_id = :id";
         $stmt = $this->conn->prepare($query);
@@ -99,12 +108,26 @@ class UserModel {
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        return $row['total'] > 0; // Trả về true nếu số khóa học > 0
+        return $row['total'] > 0; 
     }
+
+    public function getUsersByRole($role) {
+        $query = "SELECT * FROM " . $this->table . " WHERE role = :role ORDER BY created_at DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':role', $role);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countByRole($role) {
+        $query = "SELECT COUNT(*) FROM " . $this->table . " WHERE role = :role";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':role', $role);
+        $stmt->execute();
+        return $stmt->fetchColumn();
+    }
+
 
    
 } 
-
-
-
-?> 
+?>
