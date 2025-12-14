@@ -1,54 +1,67 @@
 <?php
 require_once './models/CourseModel.php';
 require_once './models/LessonModel.php';
+require_once './models/CategoryModel.php';
 require_once './models/EnrollmentModel.php';
+
 class CourseController {
     
     private $courseModel;
     private $lessonModel;
-    private $enrollmentModel;
+    private $categoryModel;
+    public $pdo; // Public để truy cập từ bên ngoài nếu cần (như trong detail)
 
     public function __construct($pdo) {
+        $this->pdo = $pdo;
         $this->courseModel = new CourseModel($pdo);
         $this->lessonModel = new LessonModel($pdo);
+        $this->categoryModel = new CategoryModel($pdo);
         $this->enrollmentModel = new EnrollmentModel($pdo);
     }
 
     public function listAllCourses() {
+        $categories = $this->categoryModel->getAllCategories();
         $allcourses = $this->courseModel->getAllCourses();
-        require './views/course/index.php';
+        require './views/courses/index.php';
     }
 
     public function searchCourses() {
+        $categories = $this->categoryModel->getAllCategories();
+        $allcourses = []; 
+
         if(isset($_POST['keyword'])) {
             $keyword = $_POST['keyword'];
-            $result = $this->courseModel->searchCourses($keyword);
-        }else {
-            $result = $this->courseModel->getAllCourses();
+            $allcourses = $this->courseModel->searchCourses($keyword);
+        } else {
+            $allcourses = $this->courseModel->getAllCourses();
         }
-        require './views/course/search.php';
+        require './views/courses/index.php';
     }
 
-    public function listCoursesByCategory($category_id) {
+    public function listCoursesByCategory() {
+        $categories = $this->categoryModel->getAllCategories();
+        $allcourses = [];
+
         if(isset($_POST['category_id'])) {
             $category_id = $_POST['category_id'];
-            $result = $this->courseModel->getCourseByCategory($category_id);
+            $allcourses = $this->courseModel->getCourseByCategory($category_id);
+        } else {
+            $allcourses = $this->courseModel->getAllCourses();
         }
-
-        require './views/course/index.php';
+        require './views/courses/index.php';
     }
 
     public function listEnrolledCourses() {
         if(isset($_SESSION['user_id'])) {
             $student_id = $_SESSION['user_id'];
-            $result = $this->courseModel->getEnrolledCourses($student_id);
+            // Gọi hàm từ model đã được sửa (lấy đủ thông tin progress, image...)
+            $courses = $this->courseModel->getEnrolledCourses($student_id);
             require './views/student/my_courses.php'; 
         }
         else {
-            header("Location: index.php?controller=Auth&action=Login");
+            header("Location: index.php?controller=auth&action=login");
             exit();
         }
-        
     }
 
     public function detail() {

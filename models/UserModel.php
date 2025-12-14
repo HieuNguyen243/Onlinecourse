@@ -23,18 +23,34 @@ class UserModel {
         $stmt->bindParam(':fullname', $fullname);
         $stmt->bindParam(':role', $role);
 
-        if ($stmt->execute()) {
-            return true;
+        try {
+            if ($stmt->execute()) {
+                return true;
+            }
+        } catch (PDOException $e) {
+            return false;
         }
         return false;
     }
 
     public function findByEmail($email) {
         $query = "SELECT * FROM " . $this->table . " WHERE email = :email";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            if (strpos($e->getMessage(), '2006') !== false || strpos($e->getMessage(), 'HY000') !== false) {
+                
+                $stmt = $this->conn->prepare($query);
+                $stmt->bindParam(':email', $email);
+                $stmt->execute();
+                return $stmt->fetch(PDO::FETCH_ASSOC);
+            }
+            throw $e;
+        }
     }
 
 
@@ -114,7 +130,4 @@ class UserModel {
 
    
 } 
-
-
-
-?> 
+?>

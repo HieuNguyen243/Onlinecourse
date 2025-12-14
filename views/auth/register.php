@@ -80,6 +80,14 @@
                     <input type="password" name="password" required placeholder="Mật khẩu">
                     <i class="fa-solid fa-lock"></i>
                 </div>
+
+                <div class="input-group">
+                    <label style="display:block;margin-bottom:8px;color:#666;font-size:0.9em;">Đăng ký dưới vai trò</label>
+                    <select name="role" style="width:100%;padding:10px;border:2px solid #eee;border-radius:8px;">
+                        <option value="0">Học viên</option>
+                        <option value="1">Giảng viên</option>
+                    </select>
+                </div>
                 
                 <button type="submit" class="btn-submit">Đăng ký thành viên</button>
             </form>

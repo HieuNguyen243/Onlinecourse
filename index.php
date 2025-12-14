@@ -14,6 +14,12 @@ try {
 $controllerInput = isset($_GET['controller']) ? $_GET['controller'] : 'home';
 $actionInput     = isset($_GET['action']) ? $_GET['action'] : 'index';
 
+// LOGIC MỚI: Nếu người dùng chưa đăng nhập và đang ở trang chủ, chuyển hướng đến trang đăng nhập
+if (!isset($_SESSION['user_id']) && $controllerInput == 'home') {
+    $controllerInput = 'auth';
+    $actionInput = 'login';
+}
+// Nếu đã đăng nhập, HomeController sẽ lo việc chuyển hướng đến dashboard đúng (student/instructor/admin)
 
 $controllerName = ucfirst($controllerInput) . 'Controller'; 
 $controllerPath = "./controllers/$controllerName.php";

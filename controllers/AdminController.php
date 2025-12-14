@@ -18,7 +18,6 @@ class AdminController {
 
         if (session_status() === PHP_SESSION_NONE) session_start();
 
-
         if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 2) {
             header("Location: index.php?controller=auth&action=login");
             exit();
