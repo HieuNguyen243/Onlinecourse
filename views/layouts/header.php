@@ -1,5 +1,7 @@
+
 <?php
 // Xác định link Dashboard dựa trên Role
+// Logic này giúp click vào LOGO sẽ về đúng trang Dashboard
 $dashboardLink = 'index.php'; // Mặc định cho khách
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role'] == 0) $dashboardLink = 'index.php?controller=student&action=dashboard';
@@ -14,7 +16,8 @@ $currFilter = $_GET['filter'] ?? '';
 
 function isHeaderActive($ctr, $act, $filter = '') {
     global $currCtr, $currAct, $currFilter;
-    if ($currCtr == $ctr && $currAct == $act && $currFilter == $filter) {
+    if ($currCtr == $ctr && $currAct == $act) {
+        if ($filter !== '' && $currFilter !== $filter) return 'text-gray-600 hover:text-purple-600 font-medium';
         return 'text-purple-600 font-bold after:w-full';
     }
     return 'text-gray-600 hover:text-purple-600 font-medium';
@@ -55,18 +58,24 @@ function isHeaderActive($ctr, $act, $filter = '') {
                         </div>
                         <span class="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
                             EduLearn
+                            <?php if(isset($_SESSION['role']) && $_SESSION['role'] == 2): ?>
+                                <span class="text-xs text-red-500 border border-red-500 px-1 ml-1 rounded uppercase">Admin</span>
+                            <?php endif; ?>
                         </span>
                     </a>
                     
                     <div class="hidden md:flex items-center space-x-8">
-                        <a href="<?php echo $dashboardLink; ?>" class="nav-link <?php echo isHeaderActive('student', 'dashboard', ''); ?>">
-                            Trang chủ
-                        </a>
-                        
-                        <?php if(isset($_SESSION['user_id']) && $_SESSION['role'] == 0): ?>
-                        <a href="index.php?controller=student&action=dashboard&filter=enrolled" class="nav-link <?php echo isHeaderActive('student', 'dashboard', 'enrolled'); ?>">
-                            Khóa học của tôi
-                        </a>
+                        <?php if(isset($_SESSION['role']) && $_SESSION['role'] == 2): ?>
+                            <?php else: ?>
+                            <a href="<?php echo $dashboardLink; ?>" class="nav-link <?php echo isHeaderActive('student', 'dashboard', ''); ?>">
+                                Trang chủ
+                            </a>
+                            
+                            <?php if(isset($_SESSION['user_id']) && $_SESSION['role'] == 0): ?>
+                            <a href="index.php?controller=student&action=dashboard&filter=enrolled" class="nav-link <?php echo isHeaderActive('student', 'dashboard', 'enrolled'); ?>">
+                                Khóa học của tôi
+                            </a>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -95,9 +104,9 @@ function isHeaderActive($ctr, $act, $filter = '') {
                                         <span class="font-medium">Bảng điều khiển</span>
                                     </a>
 
-                                    <a href="index.php?controller=manageprofile&action=index" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
-                                        <i class="fas fa-tachometer-alt w-6 text-center"></i>
-                                        <span class="font-medium">Thông tin tài khoản</span>
+                                    <a href="index.php?controller=manageprofile&action=editProfile" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
+                                        <i class="fas fa-user-edit w-6 text-center"></i>
+                                        <span class="font-medium">Chỉnh sửa thông tin</span>
                                     </a>
 
                                     <a href="index.php?controller=auth&action=logout" class="flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition">
