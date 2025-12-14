@@ -53,12 +53,6 @@ class UserModel {
         }
     }
 
-     public function getAll() {
-        $query = "SELECT * FROM " . $this->table . " ORDER BY created_at DESC";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
 
 
     public function getById($id) {
@@ -81,6 +75,31 @@ class UserModel {
         return false;
     }
 
+    public function updatePassword($id, $newPassword) {
+        $query = "UPDATE " . $this->table . " SET password = :password WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $hashed_password = password_hash($newPassword, PASSWORD_DEFAULT);
+        $stmt->bindParam(':password', $hashed_password);
+        $stmt->bindParam(':id', $id);
+        
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+
+    public function updateProfile($id, $fullname, $email) {
+        $query = "UPDATE " . $this->table . " SET fullname = :fullname, email = :email WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':fullname', $fullname);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':id', $id);
+        
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
 
     public function hasCourses($userId) {
         $query = "SELECT COUNT(*) as total FROM courses WHERE instructor_id = :id";
@@ -89,8 +108,25 @@ class UserModel {
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        return $row['total'] > 0;
+        return $row['total'] > 0; 
     }
+
+    public function getUsersByRole($role) {
+        $query = "SELECT * FROM " . $this->table . " WHERE role = :role ORDER BY created_at DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':role', $role);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countByRole($role) {
+        $query = "SELECT COUNT(*) FROM " . $this->table . " WHERE role = :role";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':role', $role);
+        $stmt->execute();
+        return $stmt->fetchColumn();
+    }
+
 
    
 } 

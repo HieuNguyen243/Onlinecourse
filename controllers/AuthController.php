@@ -26,9 +26,19 @@ class AuthController {
                 $_SESSION['fullname'] = $user['fullname'];
                 $_SESSION['role'] = $user['role'];
 
-              
-                header("Location: index.php?controller=home&action=index");
-                exit();
+              if ($user['role'] == 2) {
+            header("Location: index.php?controller=admin&action=dashboard");
+            exit();
+        } 
+        elseif ($user['role'] == 1) {
+            header("Location: index.php?controller=instructor&action=dashboard");
+            exit();
+        } 
+        else {
+            header("Location: index.php?controller=home&action=index");
+            exit();
+        }
+                
             } else {
                 $error = "Sai tên đăng nhập hoặc mật khẩu!";
                 require_once 'views/auth/login.php';
@@ -76,5 +86,8 @@ class AuthController {
         header("Location: index.php?controller=auth&action=login");
         exit();
     }
+
+
 }
+
 ?> 

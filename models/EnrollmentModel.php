@@ -39,6 +39,12 @@ class EnrollmentModel {
     public function updateProgress($enrollment_id, $course_id) {
         $sqlTotal = "SELECT COUNT(*) as total FROM lessons WHERE course_id = ?";
         $sqlCompleted = "SELECT COUNT(*) as completed FROM lesson_completions WHERE enrolled_id = ?";
+
+    public function countByStudentId($student_id) {
+        $sql = "SELECT COUNT(*) FROM enrollments WHERE student_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$student_id]);
+        return $stmt->fetchColumn();
     }
 }
 ?>

@@ -1,15 +1,26 @@
-<?php
-// Lấy Controller và Action hiện tại để highlight menu
-$currentController = isset($_GET['controller']) ? $_GET['controller'] : 'home';
-$currentAction     = isset($_GET['action']) ? $_GET['action'] : 'index';
 
-// Helper function để check active menu
-function isActive($ctr, $act = null) {
-    global $currentController, $currentAction;
-    if ($act) {
-        return ($currentController == $ctr && $currentAction == $act) ? 'text-purple-600 font-bold' : 'text-gray-700 hover:text-purple-600 font-medium';
+<?php
+// Xác định link Dashboard dựa trên Role
+// Logic này giúp click vào LOGO sẽ về đúng trang Dashboard
+$dashboardLink = 'index.php'; // Mặc định cho khách
+if (isset($_SESSION['user_id'])) {
+    if ($_SESSION['role'] == 0) $dashboardLink = 'index.php?controller=student&action=dashboard';
+    elseif ($_SESSION['role'] == 1) $dashboardLink = 'index.php?controller=instructor&action=dashboard';
+    elseif ($_SESSION['role'] == 2) $dashboardLink = 'index.php?controller=admin&action=dashboard';
+}
+
+// Logic active menu
+$currCtr = $_GET['controller'] ?? 'home';
+$currAct = $_GET['action'] ?? 'index';
+$currFilter = $_GET['filter'] ?? '';
+
+function isHeaderActive($ctr, $act, $filter = '') {
+    global $currCtr, $currAct, $currFilter;
+    if ($currCtr == $ctr && $currAct == $act) {
+        if ($filter !== '' && $currFilter !== $filter) return 'text-gray-600 hover:text-purple-600 font-medium';
+        return 'text-purple-600 font-bold after:w-full';
     }
-    return ($currentController == $ctr) ? 'text-purple-600 font-bold' : 'text-gray-700 hover:text-purple-600 font-medium';
+    return 'text-gray-600 hover:text-purple-600 font-medium';
 }
 ?>
 <!DOCTYPE html>
@@ -17,43 +28,21 @@ function isActive($ctr, $act = null) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Nền tảng học trực tuyến hàng đầu">
-    
-    <title><?php echo isset($pageTitle) ? $pageTitle : 'EduLearn - Nền tảng học trực tuyến'; ?></title>
-    
+    <title>EduLearn - Học trực tuyến</title>
     <link rel="icon" href="./assets/images/favicon.ico">
-
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        
-        /* Hiệu ứng gạch chân menu */
         .nav-link { position: relative; transition: color 0.3s; }
         .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -5px;
-            left: 50%;
-            background: #667eea;
-            transition: all 0.3s;
-            transform: translateX(-50%);
+            content: ''; position: absolute; width: 0; height: 2px; bottom: -5px; left: 50%;
+            background: #667eea; transition: all 0.3s; transform: translateX(-50%);
         }
         .nav-link:hover::after { width: 100%; }
-        
-        /* Dropdown logic */
-        .dropdown:hover .dropdown-menu { display: block; animation: fadeIn 0.2s ease-in-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .nav-link.after\:w-full::after { width: 100%; }
     </style>
 </head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
@@ -62,28 +51,31 @@ function isActive($ctr, $act = null) {
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between h-16">
                 
-                <div class="flex items-center space-x-8">
-                    <a href="index.php" class="flex items-center space-x-2 group">
-                        <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-purple-200 transition">
-                            <i class="fas fa-graduation-cap text-white text-xl"></i>
+                <div class="flex items-center space-x-12">
+                    <a href="<?php echo $dashboardLink; ?>" class="flex items-center space-x-2 group">
+                        <div class="w-9 h-9 gradient-bg rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-purple-200 transition">
+                            <i class="fas fa-graduation-cap text-white text-lg"></i>
                         </div>
-                        <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                        <span class="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
                             EduLearn
+                            <?php if(isset($_SESSION['role']) && $_SESSION['role'] == 2): ?>
+                                <span class="text-xs text-red-500 border border-red-500 px-1 ml-1 rounded uppercase">Admin</span>
+                            <?php endif; ?>
                         </span>
                     </a>
                     
                     <div class="hidden md:flex items-center space-x-8">
-                        <a href="index.php" class="nav-link <?php echo isActive('home'); ?>">
-                            Trang chủ
-                        </a>
-                        <a href="index.php?controller=course&action=listAllCourses" class="nav-link <?php echo isActive('course', 'listAllCourses'); ?>">
-                            Khóa học
-                        </a>
-                        
-                        <?php if(isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] == 0): ?>
-                        <a href="index.php?controller=course&action=listEnrolledCourses" class="nav-link <?php echo isActive('course', 'listEnrolledCourses'); ?>">
-                            Khóa của tôi
-                        </a>
+                        <?php if(isset($_SESSION['role']) && $_SESSION['role'] == 2): ?>
+                            <?php else: ?>
+                            <a href="<?php echo $dashboardLink; ?>" class="nav-link <?php echo isHeaderActive('student', 'dashboard', ''); ?>">
+                                Trang chủ
+                            </a>
+                            
+                            <?php if(isset($_SESSION['user_id']) && $_SESSION['role'] == 0): ?>
+                            <a href="index.php?controller=student&action=dashboard&filter=enrolled" class="nav-link <?php echo isHeaderActive('student', 'dashboard', 'enrolled'); ?>">
+                                Khóa học của tôi
+                            </a>
+                            <?php endif; ?>
                         <?php endif; ?>
 
                         <?php if(isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] == 1): ?>
@@ -95,32 +87,10 @@ function isActive($ctr, $act = null) {
                     </div>
                 </div>
                 
-                <div class="hidden lg:flex flex-1 max-w-md mx-8">
-                    <form action="index.php?controller=course&action=searchCourses" method="POST" class="w-full">
-                        <div class="relative group">
-                            <input 
-                                type="text" 
-                                name="keyword" 
-                                placeholder="Tìm kiếm khóa học..." 
-                                class="w-full pl-10 pr-10 py-2 border border-gray-200 rounded-full bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                            >
-                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500"></i>
-                            <button type="submit" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-600 cursor-pointer">
-                                <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                
                 <div class="flex items-center space-x-4">
                     <?php if(isset($_SESSION['user_id'])): ?>
-                        <button class="relative p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-full transition">
-                            <i class="far fa-bell text-xl"></i>
-                            <span class="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-                        </button>
-                        
-                        <div class="relative dropdown z-50">
-                            <button class="flex items-center space-x-2 p-1 hover:bg-gray-100 rounded-full transition border border-transparent hover:border-gray-200">
+                        <div class="relative z-50">
+                            <button id="user-menu-btn" class="flex items-center space-x-2 p-1 hover:bg-gray-100 rounded-full transition border border-transparent hover:border-gray-200 focus:outline-none">
                                 <div class="w-9 h-9 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
                                     <?php echo strtoupper(substr($_SESSION['fullname'] ?? 'U', 0, 1)); ?>
                                 </div>
@@ -130,54 +100,33 @@ function isActive($ctr, $act = null) {
                                 <i class="fas fa-chevron-down text-xs text-gray-500 pr-2"></i>
                             </button>
                             
-                            <div class="dropdown-menu hidden absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 overflow-hidden">
+                            <div id="user-menu-content" class="hidden absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 overflow-hidden transform origin-top-right transition-all duration-200">
                                 <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50">
                                     <p class="text-sm font-bold text-gray-800"><?php echo htmlspecialchars($_SESSION['fullname'] ?? 'User'); ?></p>
                                     <p class="text-xs text-gray-500 truncate"><?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?></p>
                                 </div>
-                                
                                 <div class="py-1">
-                                    <?php 
-                                        $dashboardLink = 'index.php?controller=student&action=dashboard'; // Mặc định student
-                                        if (isset($_SESSION['role'])) {
-                                            if ($_SESSION['role'] == 1) $dashboardLink = 'index.php?controller=instructor&action=dashboard';
-                                            if ($_SESSION['role'] == 2) $dashboardLink = 'index.php?controller=admin&action=dashboard';
-                                        }
-                                    ?>
                                     <a href="<?php echo $dashboardLink; ?>" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
                                         <i class="fas fa-tachometer-alt w-6 text-center"></i>
                                         <span class="font-medium">Bảng điều khiển</span>
                                     </a>
 
-                                    <?php if(isset($_SESSION['role']) && $_SESSION['role'] == 0): ?>
-                                    <a href="index.php?controller=course&action=listEnrolledCourses" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
-                                        <i class="fas fa-book-reader w-6 text-center"></i>
-                                        <span class="font-medium">Khóa học của tôi</span>
+                                    <a href="index.php?controller=manageprofile&action=editProfile" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
+                                        <i class="fas fa-user-edit w-6 text-center"></i>
+                                        <span class="font-medium">Chỉnh sửa thông tin</span>
                                     </a>
-                                    <?php endif; ?>
-                                    
-                                    <a href="index.php?controller=auth&action=profile" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
-                                        <i class="far fa-user-circle w-6 text-center"></i>
-                                        <span>Thông tin cá nhân</span>
+
+                                    <a href="index.php?controller=auth&action=logout" class="flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition">
+                                        <i class="fas fa-sign-out-alt w-6 text-center"></i>
+                                        <span class="font-medium">Đăng xuất</span>
                                     </a>
                                 </div>
-                                
-                                <div class="border-t border-gray-100 my-1"></div>
-                                
-                                <a href="index.php?controller=auth&action=logout" class="flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition">
-                                    <i class="fas fa-sign-out-alt w-6 text-center"></i>
-                                    <span class="font-medium">Đăng xuất</span>
-                                </a>
                             </div>
                         </div>
                     <?php else: ?>
                         <div class="flex items-center space-x-3">
-                            <a href="index.php?controller=auth&action=login" class="hidden sm:block px-5 py-2 text-gray-600 hover:text-purple-600 font-medium transition rounded-full hover:bg-purple-50">
-                                Đăng nhập
-                            </a>
-                            <a href="index.php?controller=auth&action=register" class="px-5 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-800 shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5 font-medium text-sm">
-                                Đăng ký ngay
-                            </a>
+                            <a href="index.php?controller=auth&action=login" class="text-gray-600 hover:text-purple-600 font-medium transition text-sm">Đăng nhập</a>
+                            <a href="index.php?controller=auth&action=register" class="px-5 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-800 shadow-lg transition text-sm font-medium">Đăng ký</a>
                         </div>
                     <?php endif; ?>
                     
@@ -222,14 +171,21 @@ function isActive($ctr, $act = null) {
     </nav>
     
     <script>
-        const btn = document.getElementById('mobile-menu-btn');
-        const menu = document.getElementById('mobile-menu');
-
-        if(btn && menu) {
-            btn.addEventListener('click', () => {
-                menu.classList.toggle('hidden');
-            });
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const userBtn = document.getElementById('user-menu-btn');
+            const userMenu = document.getElementById('user-menu-content');
+            if (userBtn && userMenu) {
+                userBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userMenu.classList.toggle('hidden');
+                });
+                document.addEventListener('click', (e) => {
+                    if (!userMenu.contains(e.target) && !userBtn.contains(e.target)) {
+                        userMenu.classList.add('hidden');
+                    }
+                });
+            }
+        });
     </script>
     
     <main class="flex-grow">

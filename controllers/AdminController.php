@@ -1,16 +1,20 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/UserModel.php';
-require_once __DIR__ . '/../models/CourseModel.php'; // Đã thêm dòng này
+require_once __DIR__ . '/../models/CourseModel.php'; 
+require_once __DIR__ . '/../models/EnrollmentModel.php'; 
 
 class AdminController {
     private $db;
     private $userModel;
+    private $courseModel;
+    private $enrollmentModel; 
 
-    public function __construct() {
-        $database = new Database();
-        $this->db = $database->connect();
+   public function __construct($pdo) { 
+        $this->db = $pdo;
         $this->userModel = new UserModel($this->db);
+        $this->courseModel = new CourseModel($this->db);
+        $this->enrollmentModel = new EnrollmentModel($this->db); 
 
         if (session_status() === PHP_SESSION_NONE) session_start();
 
@@ -20,80 +24,97 @@ class AdminController {
         }
     }
 
-    public function index() {
-        $users = $this->userModel->getAll();
-        require_once 'views/admin/users/manage.php';
+    public function dashboard() {
+        $countStudent = $this->userModel->countByRole(0);
+        $countInstructor = $this->userModel->countByRole(1);
+        $countAdmin = $this->userModel->countByRole(2);
+        $countCourse = $this->courseModel->countAll();
+
+        require_once 'views/admin/dashboard.php';
     }
-    
-    // Quản lý Users (Giữ nguyên)
-    public function createUser() {
+
+   public function manageStudent() {
+        $students = $this->userModel->getUsersByRole(0);
+        
+        foreach ($students as &$st) {
+            $st['course_count'] = $this->enrollmentModel->countByStudentId($st['id']);
+        }
+        unset($st); // Hủy tham chiếu
+
+        require_once 'views/admin/manageStudent.php';
+    }
+
+    public function manageInstructor() {
+        $instructors = $this->userModel->getUsersByRole(1); // Role 1 là giảng viên
+        
+        foreach ($instructors as &$inst) {
+            $inst['courses'] = $this->courseModel->getCoursesByInstructorId($inst['id']);
+        }
+        unset($inst);
+
+        require_once 'views/admin/manageInstructor.php';
+    }
+
+    public function createInstructor() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $username = $_POST['username'];
             $email = $_POST['email'];
             $password = $_POST['password'];
             $fullname = $_POST['fullname'];
-            $role = $_POST['role'];
+            $role = 1; 
 
             if ($this->userModel->create($username, $email, $password, $fullname, $role)) {
-                header("Location: index.php?controller=admin&action=index");
+                echo "<script>alert('Thêm giảng viên thành công!'); window.location.href='index.php?controller=admin&action=manageInstructor';</script>";
             } else {
-                $error = "Có lỗi xảy ra!";
-                require_once 'views/admin/users/create.php';
+                echo "<script>alert('Lỗi: Username hoặc Email đã tồn tại!'); window.history.back();</script>";
             }
-        } else {
-            require_once 'views/admin/users/create.php';
         }
+    }
+
+    public function manageCourse() {
+        $approvedCourses = $this->courseModel->getCoursesByStatus('approved');
+        $pendingCourses = $this->courseModel->getCoursesByStatus('pending');
+        
+        require_once 'views/admin/manageCourse.php';
+    }
+
+    public function setCourseStatus() {
+        if (isset($_GET['id']) && isset($_GET['status'])) {
+            $id = $_GET['id'];
+            $status = $_GET['status']; 
+            
+            $this->courseModel->updateStatus($id, $status);
+            header("Location: index.php?controller=admin&action=manageCourse");
+        }
+    }
+
+    public function manageAdmin() {
+        $admins = $this->userModel->getUsersByRole(2);
+        require_once 'views/admin/manageAdmin.php'; 
     }
 
     public function deleteUser() {
         if (isset($_GET['id'])) {
             $id = $_GET['id'];
-            $user = $this->userModel->getById($id);
+            $type = isset($_GET['type']) ? $_GET['type'] : 'student'; 
 
-            if ($user) {
-                if ($user['role'] == 1) {
-                    if ($this->userModel->hasCourses($id)) {
-                        echo "<script>alert('CẢNH BÁO: Không thể xóa giáo viên này vì họ đang có khóa học trên hệ thống! Hãy xóa khóa học trước.'); window.location.href='index.php?controller=admin&action=index';</script>";
-                        return; 
-                    }
+            $user = $this->userModel->getById($id);
+            if ($user && $user['role'] == 1) {
+                if ($this->userModel->hasCourses($id)) {
+                    echo "<script>alert('Không thể xóa giảng viên đang có khóa học!'); window.location.href='index.php?controller=admin&action=manageInstructor';</script>";
+                    return; 
                 }
-                
-                if ($this->userModel->delete($id)) {
-                    header("Location: index.php?controller=admin&action=index");
-                } else {
-                    echo "Lỗi xóa người dùng!";
-                }
+            }
+
+            if ($this->userModel->delete($id)) {
+                $redirectAction = ($type == 'instructor') ? 'manageInstructor' : 'manageStudent';
+                header("Location: index.php?controller=admin&action=$redirectAction");
+            } else {
+                echo "Lỗi xóa người dùng!";
             }
         }
     }
 
-    // --- [NEW] DUYỆT KHÓA HỌC ---
 
-    public function pendingCourses() {
-        $courseModel = new CourseModel($this->db);
-        $pendingCourses = $courseModel->getPendingCourses();
-        require_once 'views/admin/courses/pending.php';
-    }
-
-    public function approve() {
-        if (isset($_GET['id'])) {
-            $courseModel = new CourseModel($this->db);
-            $courseModel->approveCourse($_GET['id']);
-            header("Location: index.php?controller=admin&action=pendingCourses");
-        }
-    }
-    
-    public function reject() {
-        if (isset($_GET['id'])) {
-            $courseModel = new CourseModel($this->db);
-            $courseModel->rejectCourse($_GET['id']);
-            header("Location: index.php?controller=admin&action=pendingCourses");
-        }
-    }
-    
-    // Dashboard Admin: Chuyển hướng đến trang quản lý user hoặc pending tùy ý
-    public function dashboard() {
-        $this->index(); 
-    }
 }
 ?>

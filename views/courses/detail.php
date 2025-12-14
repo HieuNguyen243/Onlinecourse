@@ -1,4 +1,4 @@
-<?php require './views/includes/header.php'; ?>
+<?php require './views/layouts/header.php'; ?>
 
 <div class="bg-gray-900 text-white py-12">
     <div class="container mx-auto px-4">
@@ -95,4 +95,4 @@
     </div>
 </div>
 
-<?php require './views/includes/footer.php'; ?>
+<?php require './views/layouts/footer.php'; ?>
