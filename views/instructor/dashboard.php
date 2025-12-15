@@ -1,22 +1,23 @@
 <?php require __DIR__ . '/../layouts/header.php'; ?>
 
-<div class="container mx-auto px-4 py-8">
-    <div class="flex flex-col md:flex-row justify-between items-start mb-8 border-b pb-4">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">Bảng Điều Khiển Giảng Viên</h1>
-            <p class="text-gray-600 mt-1">Quản lý khóa học, bài học và theo dõi tiến độ học viên của bạn.</p>
+<div class="flex min-h-screen bg-gray-50">
+    
+    <?php require __DIR__ . '/../layouts/sidebar.php'; ?>
+
+    <div class="flex-1 p-4 md:p-8">
+        <div class="flex flex-col md:flex-row justify-between items-start mb-8 border-b pb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Bảng Điều Khiển Giảng Viên</h1>
+                <p class="text-gray-600 mt-1">Quản lý khóa học, bài học và theo dõi tiến độ học viên của bạn.</p>
+            </div>
+            <a href="index.php?controller=Instructor&action=createCourse" 
+               class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition shadow-md mt-4 md:mt-0">
+                <i class="fas fa-plus-circle mr-2"></i> Tạo Khóa học mới
+            </a>
         </div>
-        <a href="index.php?controller=Instructor&action=createCourse" 
-           class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition shadow-md mt-4 md:mt-0">
-            <i class="fas fa-plus-circle mr-2"></i> Tạo Khóa học mới
-        </a>
-    </div>
 
-        
-        
-
-        <div class="lg:col-span-9">
-            <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Khóa học của tôi (<?php echo count($courses); ?>)</h3>
+        <div>
+            <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Khóa học của tôi (<?php echo !empty($courses) ? count($courses) : 0; ?>)</h3>
             
             <?php if (!empty($courses)): ?>
                 <div class="space-y-4">
@@ -59,7 +60,7 @@
                                     <i class="fas fa-book-open mr-1"></i> Bài học
                                 </a>
                                 
-                                <a href="index.php?controller=Instructor&action=updateCourse&id=<?php echo urlencode($course['id']); ?>" 
+                                <a href="index.php?controller=Instructor&action=editCourse&id=<?php echo urlencode($course['id']); ?>" 
                                    class="btn btn-sm bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium text-xs transition border border-blue-200">
                                     <i class="fas fa-edit"></i> Sửa
                                 </a>

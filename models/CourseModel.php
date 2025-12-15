@@ -174,8 +174,8 @@ class CourseModel {
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([$course_id]);
     }
-}
-?>
+
+
     public function countAll() {
         $query = "SELECT COUNT(*) FROM courses";
         $stmt = $this->pdo->prepare($query);
@@ -208,5 +208,6 @@ class CourseModel {
         $stmt->execute([$instructorId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
 }
+
+?>

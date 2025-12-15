@@ -26,7 +26,7 @@ class LessonController {
             
             $currentLesson = $this->lessonModel->getLessonById($lesson_id);
             $listLessons = $this->lessonModel->getLessonsByCourse($course_id);
-            
+            $currentLesson['completed'] = $this->lessonModel->isLessonCompleted($student_id, $lesson_id);
             foreach ($listLessons as &$l) {
                 $l['completed'] = $this->lessonModel->isLessonCompleted($student_id, $l['id']);
                 $l['is_current'] = ($l['id'] == $lesson_id);
@@ -65,8 +65,7 @@ class LessonController {
             $percent = ($total > 0) ? ($done / $total) * 100 : 0;
             $this->enrollmentModel->updateProgressDirect($student_id, $course_id, $percent);
 
-            header("Location: index.php?controller=lesson&action=detail&course_id=$course_id");
-            exit();
+            header("Location: index.php?controller=lesson&action=detail&course_id=$course_id&lesson_id=$lesson_id");            exit();
         }    
     }
 

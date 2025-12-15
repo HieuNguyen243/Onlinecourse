@@ -1,4 +1,3 @@
-
 <?php
 // Xác định link Dashboard dựa trên Role
 // Logic này giúp click vào LOGO sẽ về đúng trang Dashboard
@@ -79,7 +78,7 @@ function isHeaderActive($ctr, $act, $filter = '') {
                         <?php endif; ?>
 
                         <?php if(isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] == 1): ?>
-                        <a href="index.php?controller=Instructor&action=progress" class="nav-link <?php echo isActive('Instructor', 'progress'); ?>">
+                        <a href="index.php?controller=Instructor&action=progress" class="nav-link <?php echo isHeaderActive('Instructor', 'progress'); ?>">
                             Theo dõi tiến độ
                         </a>
                         <?php endif; ?>
@@ -139,33 +138,12 @@ function isHeaderActive($ctr, $act, $filter = '') {
         
         <div id="mobile-menu" class="hidden md:hidden border-t border-gray-100 bg-white">
             <div class="px-4 py-3 space-y-1">
-                <a href="index.php" class="block px-3 py-2 rounded-lg text-base font-medium <?php echo ($currentController == 'home') ? 'bg-purple-50 text-purple-600' : 'text-gray-700 hover:bg-gray-50'; ?>">
+                <a href="index.php" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50">
                     <i class="fas fa-home w-6"></i> Trang chủ
                 </a>
-                <a href="index.php?controller=course&action=listAllCourses" class="block px-3 py-2 rounded-lg text-base font-medium <?php echo ($currentController == 'course' && $currentAction == 'listAllCourses') ? 'bg-purple-50 text-purple-600' : 'text-gray-700 hover:bg-gray-50'; ?>">
+                 <a href="index.php?controller=course&action=listAllCourses" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50">
                     <i class="fas fa-book w-6"></i> Khóa học
                 </a>
-                
-                <?php if(isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] == 1): ?>
-                <a href="index.php?controller=Instructor&action=progress" class="block px-3 py-2 rounded-lg text-base font-medium <?php echo ($currentController == 'Instructor' && $currentAction == 'progress') ? 'bg-purple-50 text-purple-600' : 'text-gray-700 hover:bg-gray-50'; ?>">
-                    <i class="fas fa-chart-pie w-6"></i> Theo dõi tiến độ
-                </a>
-                <?php endif; ?>
-
-                <?php if(isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] == 0): ?>
-                <a href="index.php?controller=course&action=listEnrolledCourses" class="block px-3 py-2 rounded-lg text-base font-medium <?php echo ($currentController == 'course' && $currentAction == 'listEnrolledCourses') ? 'bg-purple-50 text-purple-600' : 'text-gray-700 hover:bg-gray-50'; ?>">
-                    <i class="fas fa-book-reader w-6"></i> Khóa của tôi
-                </a>
-                <?php endif; ?>
-                
-                <div class="pt-4 pb-2">
-                    <form action="index.php?controller=course&action=searchCourses" method="POST">
-                        <div class="relative">
-                            <input type="text" name="keyword" placeholder="Tìm kiếm khóa học..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50">
-                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        </div>
-                    </form>
-                </div>
             </div>
         </div>
     </nav>
